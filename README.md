@@ -104,6 +104,7 @@ A Hindi-language news portal with a modern, responsive UI: sticky navigation, ca
 | Leadership | Videography and Video Editing |
 | Communication | Storytelling and Storywriting |
 | Team Collaboration | Book Reading |
+| organizing | hackathon organizer |
 
 ---
 
