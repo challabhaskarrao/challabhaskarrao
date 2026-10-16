@@ -2,9 +2,7 @@ import json
 import os
 import re
 import urllib.request
-from datetime import datetime, timezone
 
-USER = "challabhaskarrao"
 TOKEN = os.environ["GH_TOKEN"]
 
 
@@ -15,23 +13,37 @@ def graphql(query):
         headers={"Authorization": "bearer " + TOKEN},
     )
     with urllib.request.urlopen(req) as res:
-        return json.load(res)["data"]["user"]
+        return json.load(res)["data"]["viewer"]
 
 
-created = graphql('{ user(login: "%s") { createdAt } }' % USER)["createdAt"]
-start_year = int(created[:4])
-end_year = datetime.now(timezone.utc).year
+user_id = graphql("{ viewer { id } }")["id"]
 
 total = 0
-for year in range(start_year, end_year + 1):
+cursor = "null"
+while True:
     query = """
-    { user(login: "%s") {
-        contributionsCollection(from: "%d-01-01T00:00:00Z", to: "%d-12-31T23:59:59Z") {
-          totalCommitContributions
+    { viewer {
+        repositories(first: 50, after: %s, isFork: false,
+                     ownerAffiliations: [OWNER, COLLABORATOR, ORGANIZATION_MEMBER]) {
+          nodes {
+            defaultBranchRef {
+              target {
+                ... on Commit { history(author: {id: "%s"}) { totalCount } }
+              }
+            }
+          }
+          pageInfo { hasNextPage endCursor }
         }
     } }
-    """ % (USER, year, year)
-    total += graphql(query)["contributionsCollection"]["totalCommitContributions"]
+    """ % (cursor, user_id)
+    repos = graphql(query)["repositories"]
+    for repo in repos["nodes"]:
+        branch = repo["defaultBranchRef"]
+        if branch and branch["target"]:
+            total += branch["target"]["history"]["totalCount"]
+    if not repos["pageInfo"]["hasNextPage"]:
+        break
+    cursor = '"%s"' % repos["pageInfo"]["endCursor"]
 
 with open("README.md", "r", encoding="utf-8") as f:
     readme = f.read()
