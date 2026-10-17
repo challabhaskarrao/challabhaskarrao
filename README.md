@@ -110,7 +110,7 @@ A Hindi-language news portal with a modern, responsive UI: sticky navigation, ca
 ## GitHub Stats
 
 <p align="center">
-  <b>Total commits (public and private): <!--COMMITS_START-->150<!--COMMITS_END--></b>
+  <b>Total commits (public and private): <!--COMMITS_START-->149<!--COMMITS_END--></b>
 </p>
 
 <p align="center">
